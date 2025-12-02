@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebLLM Model Checker</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .model { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+        .mit { background: #d4ffd4; }
+        .loading { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Available WebLLM Models</h1>
+    <div id="status" class="loading">Loading model list...</div>
+    <div id="models"></div>
+    
+    <script type="module">
+        import { prebuiltAppConfig } from "https://esm.run/@mlc-ai/web-llm";
+        
+        const modelsDiv = document.getElementById('models');
+        const statusDiv = document.getElementById('status');
+        
+        try {
+            console.log('Full config:', prebuiltAppConfig);
+            
+            const modelList = prebuiltAppConfig.model_list || [];
+            statusDiv.textContent = `Found ${modelList.length} models:`;
+            
+            // Filter for Phi models
+            const phiModels = modelList.filter(m => 
+                m.model_id.toLowerCase().includes('phi') || 
+                m.model.toLowerCase().includes('phi')
+            );
+            
+            modelsDiv.innerHTML = '<h2>Phi Models:</h2>';
+            phiModels.forEach(model => {
+                const div = document.createElement('div');
+                div.className = 'model';
+                if (model.model_id.toLowerCase().includes('phi-3')) {
+                    div.className += ' mit';
+                }
+                div.innerHTML = `
+                    <strong>ID:</strong> ${model.model_id}<br>
+                    <strong>Model:</strong> ${model.model}<br>
+                    <strong>Size:</strong> ${model.model_lib ? 'Available' : 'Check console'}
+                `;
+                modelsDiv.appendChild(div);
+            });
+            
+            // Show all available models in console
+            console.log('All available models:', modelList.map(m => m.model_id));
+            
+        } catch (error) {
+            statusDiv.textContent = 'Error loading models: ' + error.message;
+            console.error(error);
+        }
+    </script>
+</body>
+</html>
